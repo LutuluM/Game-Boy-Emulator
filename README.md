@@ -2,6 +2,6 @@
 A simple Game Boy emulator
 
 
-*Bios not included
+*Bootloader not included
 
 *Roms not included
