@@ -5,10 +5,12 @@ This emulator should support most 32kb roms for the Game Boy. Doesn't support so
 
 Requires the Game Boy bootloader to run.
 
-
+Screen Examples
 ![intro](https://github.com/LutuluM/Game-Boy-Emulator/blob/master/screenshots/intro.PNG)
-i[LoadScreen](https://github.com/LutuluM/Game-Boy-Emulator/blob/master/screenshots/load%20screen.PNG)
+![LoadScreen](https://github.com/LutuluM/Game-Boy-Emulator/blob/master/screenshots/load%20screen.PNG)
 ![Game](https://github.com/LutuluM/Game-Boy-Emulator/blob/master/screenshots/game.PNG)
+
+Print out of Vram
 ![Vram](https://github.com/LutuluM/Game-Boy-Emulator/blob/master/screenshots/Memory.PNG)
 
 *Bootloader and Roms NOT INCLUDED
