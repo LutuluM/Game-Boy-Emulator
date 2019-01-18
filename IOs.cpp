@@ -5,11 +5,13 @@
 #include "Graphics.h"
 #include <SDL.h>
 
-
 extern uchar debug;
 
 uchar DivReset;
 uchar running;
+
+static uchar buttons; //upper buttons lower d-pad
+uchar fpshelp;
 
 void checkIO() {
 	keyboard();
@@ -21,15 +23,14 @@ void checkIO() {
 
 void keyboard() {
 	SDL_Event event;
-	static uchar buttons; //upper buttons lower d-pad
+	
 	uchar j5, j4, current, i;
 	
-	//while(1)
-	{
 	current = readMem(0xFF00);
 	j5 = (current & 0x20) >> 5;
 	j4 = (current & 0x10) >> 4;
-
+	fpshelp = (fpshelp + 1) % 100;
+	if(fpshelp == 0)
 	while (SDL_PollEvent(&event) != 0)//Check Keys //THIS SOB IS THE FUCKING FPS PROBLEM
 	{
 		if (event.type == SDL_KEYDOWN)
@@ -148,7 +149,6 @@ void keyboard() {
 		}
 	}
 	setJoy(current);
-}
 }
 
 void Interrupts(){
