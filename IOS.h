@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef IOs
 #define IOs
 
@@ -10,6 +8,6 @@ void Interrupts();
 void Timer();
 void LCDC();
 void DMA(ushort adr);
-
+void divReset();
 #endif // !1
 

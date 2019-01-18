@@ -1,5 +1,3 @@
-#pragma once
-
 #include "defs.h"
 
 #ifndef gpuh
@@ -7,15 +5,22 @@
 
 void initGraphics();
 void exitGraphics();
+
+void NextGraphic();
+void printBackGroundTiles();
+void printWindowTiles();
+void printBuffer();
+void printFrame();
+
 void printSprites();
+void flipSpriteN(uchar tile, uchar colorPalette, uchar x1, uchar y1, uchar prio);
+void flipSpriteV(uchar tile, uchar colorPalette, uchar x1, uchar y1, uchar prio);
+void flipSpriteH(uchar tile, uchar colorPalette, uchar x1, uchar y1, uchar prio);
+void flipSpriteVH(uchar tile, uchar colorPalette, uchar x1, uchar y1, uchar prio);
+
+void printMemory();
 void printVTable();
 void printSTable();
-void printMemory();
-void NextGraphic();
-void printPixel();
-void printBuffer();
-void flipSpriteN(uchar tile, uchar b, uchar x1, uchar y1);
-void flipSpriteV(uchar tile, uchar b, uchar x1, uchar y1);
-void flipSpriteH(uchar tile, uchar b, uchar x1, uchar y1);
-void flipSpriteVH(uchar tile, uchar b, uchar x1, uchar y1);
+
+uchar getSL();
 #endif
