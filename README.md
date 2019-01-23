@@ -7,7 +7,7 @@ Requires the Game Boy bootrom* to run.
 
 ## TODO  
 ~~Fix Event Polling lag~~  
-Cap frame Rate  
+~~Cap frame Rate~~  
 Implement Sound  
 Double Sprite Rendering  
 Properly timed Timer  
