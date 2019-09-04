@@ -9,21 +9,35 @@ uchar debug;
 GBCPU CPU;
 uchar HLm;
 
+void initCPU() {
+	CPU.A = 0;
+	CPU.B = 0;
+	CPU.C = 0;
+	CPU.E = 0;
+	Flag = 0;
+	CPU.H = 0;
+	CPU.L = 0;
+	CPU.PC = 0;
+	CPU.SP = 0;
+
+	CPU.CPUTicks = 0;
+}
+
 void OPSelect()
 {
 	///A is the accumulator so its use is implicitly
 	ushort adr; //used for 16-bit addresses
 	uchar op;   //used for 8-bit values
-	//if (CPU.PC > 0xFD00 && CPU.PC < 0xFF04) debug = 1;
 	//if (debug) getchar();
 	if (debug == 1)printf("PC:%.4X OP:%.2X ", CPU.PC, readMem(CPU.PC));
-
+	
 	if (CPU.halt) 
 	{
 		//printf("Halted\n");
 		CPU.CPUTicks += 4;
 		return;
 	}
+
 	op = readMem(CPU.PC++);
 	switch (op)
 	{
@@ -973,6 +987,7 @@ void OPSelect()
 		case 0xbe:
 			if (debug == 1)printf("CP (HL)\n");
 			CP(readMem(HL));
+			CPU.CPUTicks += 4;
 			break;
 		case 0xbf:
 			if (debug == 1)printf("CP A \n");
@@ -1383,8 +1398,6 @@ void OPSelect()
 void extendedOPSelect() {
 	uchar op;	//used for 8-bit values
 	if (debug == 1)printf("PC:%.4X XP:%.2X ", CPU.PC, readMem(CPU.PC));
-	
-	CPU.CPUTicks += 4;
 
 	op = readMem(CPU.PC++);
 	switch (op)
@@ -1418,6 +1431,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			RLC(&HLm);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 8;
 			break;
 		case 0x07:
 			if (debug == 1)printf("RLC A\n");
@@ -1452,6 +1466,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			RRC(&HLm);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 8;
 			break;
 		case 0x0f:
 			if (debug == 1)printf("RRC A\n");
@@ -1486,6 +1501,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			RL(&HLm);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 8;
 			break;
 		case 0x17:
 			if (debug == 1)printf("RL A\n");
@@ -1520,6 +1536,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			RR(&HLm);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 8;
 			break;
 		case 0x1f:
 			if (debug == 1)printf("RR A \n");
@@ -1554,6 +1571,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			SLA(&HLm);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 8;
 			break;
 		case 0x27:
 			if (debug == 1)printf("SLA A\n");
@@ -1588,6 +1606,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			SRA(&HLm);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 8;
 			break;
 		case 0x2f:
 			if (debug == 1)printf("SRA A\n");
@@ -1622,6 +1641,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			SWAP(&HLm);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 8;
 			break;
 		case 0x37:	
 			if(debug == 1)printf("SWAP A \n");
@@ -1656,6 +1676,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			SRL(&HLm);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 8;
 			break;
 		case 0x3f:
 			if (debug == 1)printf("SRL A \n");
@@ -1690,6 +1711,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			BIT(HLm,0);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 4;
 			break;
 		case 0x47:  
 			if (debug == 1)printf("BIT 0,A \n");
@@ -1724,6 +1746,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			BIT(HLm, 1);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 4;
 			break;
 		case 0x4f:
 			if (debug == 1)printf("BIT 1,A \n");
@@ -1758,6 +1781,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			BIT(HLm, 2);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 4;
 			break;
 		case 0x57:
 			if (debug == 1)printf("BIT 2,A \n");
@@ -1792,6 +1816,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			BIT(HLm, 3);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 4;
 			break;
 		case 0x5f:
 			if (debug == 1)printf("BIT 3,A \n");
@@ -1826,6 +1851,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			BIT(HLm, 4);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 4;
 			break;
 		case 0x67:
 			if (debug == 1)printf("BIT 4,A \n");
@@ -1860,6 +1886,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			BIT(HLm, 5);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 4;
 			break;
 		case 0x6f:
 			if (debug == 1)printf("BIT 5,A \n");
@@ -1894,6 +1921,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			BIT(HLm, 6);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 4;
 			break;
 		case 0x77:
 			if (debug == 1)printf("BIT 6,A \n");
@@ -1928,6 +1956,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			BIT(HLm, 7);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 4;
 			break;
 		case 0x7f:
 			if (debug == 1)printf("BIT 7,A \n");
@@ -1962,6 +1991,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			RES(&HLm,0);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 8;
 			break;
 		case 0x87:	
 			if (debug == 1)printf("RES 0,A \n");
@@ -1996,6 +2026,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			RES(&HLm, 1);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 8;
 			break;
 		case 0x8f:
 			if (debug == 1)printf("RES 1,A \n");
@@ -2030,6 +2061,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			RES(&HLm, 2);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 8;
 			break;
 		case 0x97:
 			if(debug == 1)printf("RES 2,A \n");
@@ -2064,6 +2096,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			RES(&HLm, 3);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 8;
 			break;
 		case 0x9F:
 			if (debug == 1)printf("RES 3,A \n");
@@ -2098,6 +2131,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			RES(&HLm, 4);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 8;
 			break;
 		case 0xa7:
 			if (debug == 1)printf("RES 4,A \n");
@@ -2132,6 +2166,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			RES(&HLm, 5);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 8;
 			break;
 		case 0xaf:
 			if (debug == 1)printf("RES 5,A \n");
@@ -2166,6 +2201,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			RES(&HLm, 6);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 8;
 			break;
 		case 0xb7:
 			if (debug == 1)printf("RES 6,A \n");
@@ -2200,6 +2236,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			RES(&HLm, 7);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 8;
 			break;
 		case 0xbf:
 			if (debug == 1)printf("RES 7,A \n");
@@ -2234,6 +2271,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			SET(&HLm, 0);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 8;
 			break;
 		case 0xc7:
 			if (debug == 1)printf("SET 0,A \n");
@@ -2268,6 +2306,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			SET(&HLm, 1);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 8;
 			break;
 		case 0xcf:	
 			if (debug == 1)printf("SET 1,A \n");
@@ -2302,6 +2341,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			SET(&HLm, 2);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 8;
 			break;
 		case 0xd7:
 			if (debug == 1)printf("SET 2,A \n");
@@ -2336,6 +2376,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			SET(&HLm, 3);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 8;
 			break;
 		case 0xdf:
 			if (debug == 1)printf("SET 3,A \n");
@@ -2370,6 +2411,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			SET(&HLm, 4);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 8;
 			break;
 		case 0xe7:
 			if (debug == 1)printf("SET 4,A \n");
@@ -2404,6 +2446,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			SET(&HLm, 5);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 8;
 			break;
 		case 0xef:
 			if (debug == 1)printf("SET 5,A \n");
@@ -2438,6 +2481,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			SET(&HLm, 6);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 8;
 			break;
 		case 0xf7:
 			if (debug == 1)printf("SET 6,A \n");
@@ -2472,6 +2516,7 @@ void extendedOPSelect() {
 			HLm = readMem(HL);
 			SET(&HLm, 7);
 			writeMem(HL, HLm);
+			CPU.CPUTicks += 8;
 			break;
 		case 0xff:
 			if (debug == 1)printf("SET 7,A \n");
@@ -2482,20 +2527,6 @@ void extendedOPSelect() {
 			getchar();
 			break;
 	}
-}
-
-void initCPU() {
-	CPU.A = 0;
-	CPU.B = 0;
-	CPU.C = 0;
-	CPU.E = 0;
-	Flag = 0;
-	CPU.H = 0;
-	CPU.L = 0;
-	CPU.PC = 0;
-	CPU.SP = 0;
-
-	CPU.CPUTicks = 0;
 }
 
 ushort getPC() {
@@ -2523,7 +2554,7 @@ ulong getCPUTicks(){
 }
 
 void halted(uchar a) {
-	CPU.halt = a&0x1;
+	CPU.halt = a & 0x1;
 }
 
 uchar DIHalt() {
@@ -2612,12 +2643,12 @@ void SCF() {
 }
 
 void CCF() {
-	Flag = (FlagZ << 7) | ((FlagC ^ 0x1) << 4);//keep z, comp c, clear rest
+	Flag = (FlagZ << 7) | ((FlagC ^ 0x1) << 4) & 0xF0;//keep z, comp c, clear rest
 	CPU.CPUTicks += 4;
 }
 
 void ADD(uchar B) {
-	Flag = 0x0;
+	Flag = 0;
 	ushort C = CPU.A + B;
 	if (C > 0xFF)//carry flag
 		Flag |= 0x10;
@@ -2650,7 +2681,7 @@ void SUB(uchar B) {
 
 void ADC(uchar B) {
 	uchar D = FlagC;
-	Flag = 0x0;
+	Flag = 0;
 	ushort C = CPU.A + B + D;
 	if (C > 0xFF)//carry flag
 		Flag |= 0x10;
@@ -2727,7 +2758,7 @@ void DEC(uchar * A) {
 		Flag |= 0x20;
 	else
 		Flag &= ~0x20;
-	/* Dec doesn't use borrow flag
+	/*// Dec doesn't use borrow flag
 	if (*A == 0)//borrow
 		Flag |= 0x10;
 	else
@@ -2824,6 +2855,103 @@ void CP(uchar B) {
 		Flag |= 0x80;
 	CPU.CPUTicks += 4;
 }
+
+void DAA() {
+	/*if (FlagN == 0)
+	{
+		if ((FlagC == 1) || (CPU.A > 0x99))
+		{
+			CPU.A += 0x60;
+			Flag |= 0x10;
+		}
+		if ((FlagH == 1) || ((CPU.A & 0x0F) > 0x09))
+		{
+			CPU.A += 0x06;
+			Flag &= ~0x20;
+		}
+	}
+	else if (FlagC && FlagH)
+	{
+		CPU.A += 0x9A;
+		Flag &= ~0x20;
+	}
+	else if (FlagC)
+	{
+		CPU.A += 0xA0;
+	}
+	else if (FlagH)
+	{
+		CPU.A += 0xFA;
+		Flag &= ~0x20;
+	}
+
+	if (CPU.A == 0)
+		Flag |= 0x80;
+	else
+		Flag &= ~0x80;
+	/**/if (FlagN)
+	{
+		if (FlagC) 
+			CPU.A -= 0x60;
+		if (FlagH) 
+			CPU.A -= 0x06;
+	}
+	else
+	{
+		if (FlagC || (CPU.A & 0xFF) > 0x99)
+		{		
+			CPU.A += 0x60;
+			Flag |= 0x10;
+		}
+		if (FlagH || (CPU.A & 0x0F) > 0x09)
+		{ 
+			CPU.A += 0x06; 
+		}
+	}
+
+	if (CPU.A == 0)
+		Flag |= 0x80;
+	else
+		Flag &= ~0x80;
+	
+	Flag &= ~0x20;
+
+	CPU.CPUTicks += 4;
+}
+
+void ADDSP(uchar B)
+{
+	Flag = 0;
+	ushort sum = CPU.SP + ((B > 0x7F) ? (B | 0xFF00) : B);//sign extension
+	if (((CPU.SP & 0xFF) + B) > 0xFF)
+		Flag |= 0x10;
+	if (((CPU.SP & 0x0F) + (B & 0x0F)) > 0x0F)
+		Flag |= 0x20;
+	CPU.SP = sum;
+	CPU.CPUTicks += 4;
+	CPU.CPUTicks += 4;
+	CPU.CPUTicks += 4;
+	CPU.CPUTicks += 4;
+}
+
+void LDHLSP(uchar B)
+{
+	Flag = 0;
+	ushort sum = CPU.SP + ((B > 0x7F) ? (B | 0xFF00) : B);//sign extension
+	if (((CPU.SP & 0xFF) + B) > 0xFF)
+		Flag |= 0x10;
+	if (((CPU.SP & 0x0F) + (B & 0x0F)) > 0x0F)
+		Flag |= 0x20;
+
+	CPU.H = (sum >> 8) & 0xFF;
+	CPU.L = sum & 0xFF;
+	CPU.CPUTicks += 4;
+	CPU.CPUTicks += 4;
+	CPU.CPUTicks += 4;
+}
+
+///------------------------------------------------
+//EXtended OpCodes
 
 void RL(uchar *A) {
 	uchar temp = FlagC;
@@ -2959,72 +3087,5 @@ void RES(uchar *A,uchar B){
 
 void SET(uchar *A,uchar B){
 	*A |= (0x1 << B);
-	CPU.CPUTicks += 4;
-}
-
-void DAA() {
-	if (FlagN == 0)
-	{
-		if ((FlagC == 1) || (CPU.A > 0x99))
-		{
-			CPU.A += 0x60;
-			Flag |= 0x10;
-		}
-		if ((FlagH == 1) || ((CPU.A & 0x0F) > 0x09))
-		{
-			CPU.A += 0x06;
-			Flag &= ~0x20;
-		}
-	}
-	else if (FlagC && FlagH)
-	{
-		CPU.A += 0x9A;
-		Flag &= ~0x20;
-	}
-	else if (FlagC)
-	{
-		CPU.A += 0xA0;
-	}
-	else if (FlagH)
-	{
-		CPU.A += 0xFA;
-		Flag &= ~0x20;
-	}
-
-	if (CPU.A == 0)
-		Flag |= 0x80;
-	else
-		Flag &= ~0x80;
-	CPU.CPUTicks += 4;
-}
-
-void ADDSP(uchar B)
-{
-	Flag = 0;
-	ushort sum = CPU.SP + ((B > 0x7F) ? (B | 0xFF00) : B);//sign extension
-	if (((CPU.SP & 0xFF) + B) > 0xFF)
-		Flag |= 0x10;
-	if (((CPU.SP & 0x0F) + (B & 0x0F)) > 0x0F)
-		Flag |= 0x20;
-	CPU.SP = sum;
-	CPU.CPUTicks += 4;
-	CPU.CPUTicks += 4;
-	CPU.CPUTicks += 4;
-	CPU.CPUTicks += 4;
-}
-
-void LDHLSP(uchar B)
-{
-	Flag = 0;
-	ushort sum = CPU.SP + ((B > 0x7F) ? (B | 0xFF00) : B);//sign extension
-	if (((CPU.SP & 0xFF) + B) > 0xFF)
-		Flag |= 0x10;
-	if (((CPU.SP & 0x0F) + (B & 0x0F)) > 0x0F)
-		Flag |= 0x20;
-	
-	CPU.H = (sum >> 8) & 0xFF;
-	CPU.L = sum & 0xFF;
-	CPU.CPUTicks += 4;
-	CPU.CPUTicks += 4;
 	CPU.CPUTicks += 4;
 }

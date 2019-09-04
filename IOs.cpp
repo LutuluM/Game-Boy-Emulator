@@ -23,15 +23,15 @@ void checkIO() {
 
 void keyboard() {
 	SDL_Event event;
-	
 	uchar j5, j4, current, i;
 	
 	current = readMem(0xFF00);
 	j5 = (current & 0x20) >> 5;
 	j4 = (current & 0x10) >> 4;
-	fpshelp = (fpshelp + 1) % 100;
+
+	fpshelp = (fpshelp + 1) % 10000;//limit key polling to 100 cpu opcodes for fps problems
 	if(fpshelp == 0)
-	while (SDL_PollEvent(&event) != 0)//Check Keys //THIS SOB IS THE FUCKING FPS PROBLEM
+	while (SDL_PollEvent(&event) != 0)//Check Keys
 	{
 		if (event.type == SDL_KEYDOWN)
 		{
@@ -72,7 +72,8 @@ void keyboard() {
 			case SDLK_ESCAPE://quit 
 				running = 0;
 			case SDLK_q://Memdump
-				dumpMem(0xFF00, 0xFE);
+				//dumpMem(0xFF00, 0xFE);
+				dumpMem(0xFE00, 0xA0);
 				break;
 			case SDLK_e://Debug toggle
 				debug ^= 1;
@@ -175,7 +176,7 @@ void Interrupts(){
 		setIME(0);
 		writeMem(0xFF0F, inter & ~0x02); //clear flags manually
 		halted(0);
-		printf("LCDL \n");
+		//printf("LCDL \n");
 	}
 	else if ((inter & 0x04) == 0x4)//Timer
 	{
@@ -184,7 +185,7 @@ void Interrupts(){
 		setIME(0);
 		writeMem(0xFF0F, inter & ~0x04); //clear flags manually
 		halted(0);
-		printf("Timer \n");
+		//printf("Timer \n");
 	}
 	else if ((inter & 0x08)== 0x8)//Serial
 	{
@@ -266,13 +267,23 @@ void Timer() {//Fix this shit
 		DivCountOld = DivCount;//save the divider time
 		setDivTimer(DivCount >> 8);//Update Div Reg
 	}
-	if (getPC() == 0x101)
+	if (getPC() == 0x100)
 	{
 		printf("Reg A is 0x%.4X\n", getReg(0));
-		printf("current ptime is %X\n", pTime);
+		printf("current passedTime is %X\n", pTime);
+		printf("current DivTotal is %X\n", DivCount);
 		printf("current Div is %X\n", readMem(0xFF04));
 		printf("current CPUTick is %X\n", getCPUTicks());
 	}
+	//if (getPC() > 0x63) printf("SL is %X Video is %X\n", getSL(),readMem(0xFF41));
+	/*if (getPC() == 0x6D || getPC() == 0x8b)
+	{
+		printf("current Div is %X SL is %X\n", readMem(0xFF04),getSL());
+		printf("current DivTotal is %X\n", DivCount);
+		getchar();
+		
+	}*/
+	//if (getPC() == 0x6A)getchar();
 }
 
 void LCDC(){
@@ -297,26 +308,16 @@ void LCDC(){
 	//lowest 2 are for videomode
 	//bit-7 isn't used
 }
-//Fix this so it's proper
-void DMA(ushort adr) {
-	static ulong transferTime = getCPUTicks();
-	ulong elapsedTime;
-	ushort i;
-	if (transferTime > getCPUTicks())
-		elapsedTime = transferTime - getCPUTicks();
-	else
-		elapsedTime = getCPUTicks() - transferTime;
 
-	if (elapsedTime < 0xC8)//cycles to process transfer
-		return;
+void DMA(ushort adr) {
+	ushort i;//just do it all at once
 
 	adr = adr << 8; //tranfer sprites from cartrage to workram
-	for (i = 0; i<0x9F; i++)
+	for (i = 0; i<0xA0; i++)
 	{
 		writeMem(0xFE00 + i, readMem(adr + i));
 	}
-	transferTime = getCPUTicks();
-	//printf("TRANSFER COMPLETE \n");
+	//printf("Transfer complete!\n");
 }
 
 void divReset() {

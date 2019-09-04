@@ -9,6 +9,7 @@ extern uchar debug;
 uchar * Brom;
 uchar * GameCode;
 
+
 ///Memory Map
 uchar * Rom0;
 uchar * Rom1;
@@ -18,7 +19,7 @@ uchar CartRamBank[0x8000];
 uchar Wram0[0x1000];
 uchar * Wram1;
 uchar WramBank[0x8000];//only swappable when in cgb mode. so not used
-uchar * Wram2;
+uchar * WramEcho;
 uchar SAtable[0xa0];
 uchar notused[0x60];
 uchar IO[0x80];
@@ -36,9 +37,31 @@ ushort totalBanks;
 char * saveName;
 
 
+
 void changeROM1(uchar data)
 {
 	const uchar RomSize = Rom0[0x148];
+	data &= 0x1F;//get lower 5 bits
+	//printf("data = %.2X", data);
+	if (ROMRAMMBC1 == 0)
+		data |= (upperBitsMBC1 << 5);//if rom banking then get upper 2 for banks
+	if ((data & 0x1F) == 0) //lower bit is zero
+	{
+		printf("data = %.2X", data);
+		data &= 0xFF >> (7 - RomSize);//max number of banks
+		printf("->%.2X  -- ", data);
+		Rom1 = &GameCode[(++data) * 0x4000];//bank 0 is not referenced by rom1 directly
+		printf("ROM changed to Bank %X\n", data);
+		printf("Rom Size is %X", RomSize);
+	}
+	else
+	{
+		data %= (0xFF >> (7 - RomSize))+1;//max number of banks
+		//printf("->%.2X  -- ", data);
+		Rom1 = &GameCode[data * 0x4000];
+	}
+	//printf("ROM changed to Bank %d\n", data);
+	/*const uchar RomSize = Rom0[0x148];
 	data &= 0x1F;//get lower 5 bits
 	printf("data = %.2X", data);
 	if (ROMRAMMBC1 == 0)
@@ -49,7 +72,7 @@ void changeROM1(uchar data)
 		Rom1 = &GameCode[(++data)*0x4000];//bank 0 is never referenced by rom1
 	else
 		Rom1 = &GameCode[data * 0x4000];
-	printf("ROM changed to Bank %d\n", data);
+	printf("ROM changed to Bank %d\n", data);*/
 }
 
 void changeRAM1(uchar data) {
@@ -114,12 +137,15 @@ void MBC1(ushort location, uchar data)
 		changeRAM1(data);
 	else
 	{
-		if (data & 0x1)
+		if (data & 0x1) {
 			ROMRAMMBC1 = 1;
-			//printf("RAM Banking Mode\n");
+			printf("RAM Banking Mode\n");
+		}
 		else
+		{
 			ROMRAMMBC1 = 0;
-			//printf("R0M Banking Mode\n");
+			printf("R0M Banking Mode\n");
+		}
 	}
 }
 
@@ -153,7 +179,7 @@ void writeMem(ushort location, uchar data) {
 	if (location <= 0x7FFF)
 	{
 		if (CartType == 0)
-			printf("Write when Rom only");
+			printf("Write when Rom only\n");
 		else if (CartType < 0x4)
 			MBC1(location, data);
 		else if (CartType < 0x7)
@@ -178,15 +204,16 @@ void writeMem(ushort location, uchar data) {
 		Wram1[location - 0xD000] = data;
 
 	else if (location <= 0xFDFF)
-		Wram2[location - 0xE000] = data;
+		WramEcho[location - 0xE000] = data;
 
 	else if (location <= 0xFE9F)
 		SAtable[location - 0xFE00] = data;
 
 	else if (location <= 0xFEFF)
 	{
-		printf("Writing to The Not Used Address!!!!\n");
-		notused[location - 0xFEA0] = data;
+		//printf("Writing to The Not Used Address!!!! %X\n",getPC());
+		//notused[location - 0xFEA0] = data;
+		//do nothing
 	}
 
 	else if (location <= 0xFF7F)//IO port register edits
@@ -219,7 +246,7 @@ void writeMem(ushort location, uchar data) {
 	else if (location <= 0xFFFE)
 		Hram[location - 0xFF80] = data;
 
-	else if (location <= 0xFFFF)
+	else if (location == 0xFFFF)
 		Interrupt[location - 0xFFFF] = data;
 	else
 		printf("Memory Write Location Error");
@@ -240,14 +267,16 @@ uchar readMem(ushort location) {
 	else if (location <= 0xBFFF)
 	{
 		if (Ramenable)
+		{
 			if (RTC)
 			{
-				printf("Real Time Clock was read from");
-				return 0x2B;//just a random number at this time
+				printf("Real Time Clock was read from @ 0x\X",location);
+				return 0x0;//just a random number at this time
 			}
 			else
 				return CartRam[location - 0xA000];
-		//printf("Ram Disabled\n");
+		}
+		printf("Ram Disabled\n");
 		return 0xFF;
 	}
 
@@ -258,13 +287,16 @@ uchar readMem(ushort location) {
 		return Wram1[location - 0xD000];
 
 	else if (location <= 0xFDFF)
-		return Wram2[location - 0xE000];
+		return WramEcho[location - 0xE000];
 
 	else if (location <= 0xFE9F)
 		return SAtable[location - 0xFE00];
 
 	else if (location <= 0xFEFF)
-		return notused[location - 0xFEA0];
+	{
+		printf("Reading unused\n");
+		return 0xFF;//notused[location - 0xFEA0];
+	}
 
 	else if (location <= 0xFF7F)
 		return IO[location - 0xFF00];
@@ -272,7 +304,7 @@ uchar readMem(ushort location) {
 	else if (location <= 0xFFFE)
 		return Hram[location - 0xFF80];
 
-	else if (location <= 0xFFFF)
+	else if (location == 0xFFFF)
 		return Interrupt[location - 0xFFFF];
 	printf("ERROR READ OUT OF BOUNDS!");
 	getchar();
@@ -307,8 +339,9 @@ void initMem() {
 	Rom1 = &GameCode[0x4000];
 	CartRam = &CartRamBank[0];
 	Wram1 = &WramBank[0x1000];
-	Wram2 = &WramBank[0];
+	WramEcho = &Wram0[0];
 	Ramenable = 0;
+	//setPC(0x100);Booting = 0;
 	Booting = 1;
 	setJoy(0x3F); //clear buttons
 }
@@ -355,7 +388,7 @@ void loadBIOS(char * Romname) {
 
 	if (fp == 0)
 	{
-		printf("BootRom not found");
+		printf("BootRom \"%s\" not found",Romname);
 		exit(0);
 	}
 		
@@ -379,7 +412,7 @@ void loadGAME(char * Romname) {
 
 	if (fp == 0)
 	{
-		printf("Game not found");
+		printf("Game ROM \"%s\" not found", Romname);
 		exit(0);
 	}
 		
@@ -418,7 +451,10 @@ void loadSave(char * Romname) {
 	fp = fopen(saveName, "rb");
 
 	if (fp == 0)
+	{
+		//fclose(fp);
 		return;//no save file
+	}
 
 	fseek(fp, 0, SEEK_END);
 	lSize = ftell(fp);
@@ -442,5 +478,5 @@ void saveGame() {
 void exitMem() {
 	free(Brom);
 	free(GameCode);
-	free(saveName);
+	//free(saveName);
 }

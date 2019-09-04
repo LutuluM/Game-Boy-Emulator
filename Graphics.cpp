@@ -1,7 +1,8 @@
 #include "Graphics.h"
-#include "time.h"
+#include <time.h>
 #include "CPU.h"
 #include "Memory.h"
+#include "IOs.h"
 #include <SDL.h>
 
 
@@ -14,14 +15,14 @@ uchar sl = 0;
 ///SDL Grpahics Handlers 
 void initGraphics() {
 
-	SDL_Init(SDL_INIT_VIDEO);
+	SDL_Init(SDL_INIT_EVERYTHING);
 
-	window = SDL_CreateWindow("Test", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, Winw, Winh, SDL_WINDOW_OPENGL);//SDL_WINDOW_OPENGL);
+	window = SDL_CreateWindow("Test", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, Winw, Winh, SDL_WINDOW_VULKAN);//SDL_WINDOW_OPENGL);
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 	
 	/*Tiles = SDL_CreateWindow("Tiles", 809 + Winw, 10, 16 * 8 * 2, 12 * 8 * 2, SDL_WINDOW_OPENGL);
 	rend = SDL_CreateRenderer(Tiles, -1, SDL_RENDERER_ACCELERATED);
-
+	
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 	SDL_RenderClear(renderer);*/
 }
@@ -34,7 +35,7 @@ void exitGraphics() {
 	SDL_Quit();
 }
 
-
+ushort frames = 0;
 
 ///Updates VideoBuffer with new scanline values. Prints frame when scanline resets. Deals with Background and Window
 void NextGraphic()
@@ -48,18 +49,17 @@ void NextGraphic()
 
 	//while (1) 
 	{
-		if (clock() - t1 > 1000)
-		{
-			t1 = clock();
-			printf("FPS: %d\n", fps);
-			fps = 0;
-		}
+		//do{
+			if (clock() - t1 > 1000)
+			{
+				t1 = clock();
+				printf("FPS: %d\n", fps);
+				fps = 0;
+			}
+		//} while (fps > 59);//frame locking*/
 
-		if (videoTicks > getCPUTicks())
-			elapsedTime = videoTicks - getCPUTicks();
-		else
-			elapsedTime = getCPUTicks() - videoTicks;
-
+		elapsedTime = getCPUTicks() - videoTicks;
+		
 		switch (Mode)//2->3->0->1
 		{
 			case 0://h-blank 204
@@ -68,39 +68,45 @@ void NextGraphic()
 					if ((readMem(0xFF40) & 0x80) != 0x80)//lcd off
 					{
 						videoTicks += 204;
-						Mode = 1;
+						//Mode = 1;
 						break;
 					}
 
 					printBackGroundTiles();	//prints background for current scanline
 					printWindowTiles(); //print window for current scanline
 					printSprites(); //prints sprites to buffer of current scanline
-					//printBuffer();	//prints current scanlin of screen buffer, replaced with full frame printing
+					//printBuffer();	//prints current scanlin of screen buffer, replaced with full frame printing for being slow
 					
 					sl++;
 					if (sl >= Winh) //V-Blank start
 					{
 						writeMem(0xFF0F, readMem(0xFF0F) | 1);
+						printFrame(); //prints a full frame
+						frames++;
+						fps++;
 						Mode = 1;
 					}
 					else//Next Line
 						Mode = 2;
 						
-					writeMem(0xFF44, sl%Vy);//update LCD Y-Coordinate
-					if (sl == Vy)
-					{
-						sl = 0;
-						printFrame(); //prints a full frame
-						fps++;
-					}
+					writeMem(0xFF44, sl);//update LCD Y-Coordinate
 					videoTicks += 204;
 				}
 				break;
 			case 1://v-blank 4560
-				if (elapsedTime > 4559)
+				if ((readMem(0xFF40) & 0x80) == 0x80)//lcd on
 				{
-					videoTicks += 4560;
-					Mode = 2;
+					if (elapsedTime > 455)
+					{
+						sl++;
+						if (sl == Vy)
+						{
+							sl = 0;
+							Mode = 2;
+						}
+						writeMem(0xFF44, sl);
+						videoTicks += 456;
+					}
 				}
 				break;
 			case 2://transfer 80
@@ -119,6 +125,10 @@ void NextGraphic()
 				break;
 		}
 		setLCDC((readMem(0xFF41) & 0xFC) | Mode); //change videomode
+	}
+	if (getPC() == 0x100)
+	{
+		printf("Frame Count: %d\n", frames);
 	}
 }
 //Prints a row of pixels for the Background to the video buffer
@@ -270,7 +280,6 @@ void printFrame(){
 		{
 			SDL_SetRenderDrawColor(renderer, vBuffer[y][x][0], vBuffer[y][x][1], vBuffer[y][x][2], 0xFF);
 			SDL_RenderDrawPoint(renderer, x, y);
-			;
 		}
 	SDL_RenderPresent(renderer);
 }
@@ -392,6 +401,8 @@ void flipSpriteV(uchar tile, uchar colorPalette, uchar x1, uchar y1,uchar prio) 
 
 			p3 = (colorPalette >> 2 * p3) & 0x3;
 
+			uchar newX = (x1 + x - 8);
+
 			if (prio && (vBuffer[sl][x1 + x - 8][0] != 0xD0)) //if the backgound isn't white
 				continue;
 
@@ -426,8 +437,8 @@ void flipSpriteH(uchar tile, uchar colorPalette, uchar x1, uchar y1, uchar prio)
 	uchar y, x, p1, p2, p3, C1, C2;
 
 		y = sl - (y1 - 16);
-		C1 = readMem(0x8000 + tile * 16 + y * 2);	// design data 2 bytes
-		C2 = readMem(0x8000 + tile * 16 + y * 2 + 1);
+		C1 = readMem(0x8000 + tile * 16 + (7-y) * 2);	// design data 2 bytes
+		C2 = readMem(0x8000 + tile * 16 + (7-y) * 2 + 1);
 
 		for (x = 0; x < 8; x++)
 		{
@@ -440,6 +451,8 @@ void flipSpriteH(uchar tile, uchar colorPalette, uchar x1, uchar y1, uchar prio)
 				continue;
 
 			p3 = (colorPalette >> 2 * p3) & 0x3;
+
+			uchar newX = (x1 + x - 8);
 			
 			if (prio && (vBuffer[sl][x1 + x - 8][0] != 0xD0)) //if the backgound isn't white
 				continue;
@@ -447,24 +460,24 @@ void flipSpriteH(uchar tile, uchar colorPalette, uchar x1, uchar y1, uchar prio)
 			switch (p3)
 			{
 			case 3://y1 + (7 - y) - 16
-				vBuffer[y1 + (7 - y) - 16][x1 + x - 8][0] = 0x20;//black
-				vBuffer[y1 + (7 - y) - 16][x1 + x - 8][1] = 0x18;
-				vBuffer[y1 + (7 - y) - 16][x1 + x - 8][2] = 0x08;
+				vBuffer[sl][x1 + x - 8][0] = 0x20;//black
+				vBuffer[sl][x1 + x - 8][1] = 0x18;
+				vBuffer[sl][x1 + x - 8][2] = 0x08;
 				break;
 			case 2:
-				vBuffer[y1 + (7 - y) - 16][x1 + x - 8][0] = 0x56;
-				vBuffer[y1 + (7 - y) - 16][x1 + x - 8][1] = 0x68;
-				vBuffer[y1 + (7 - y) - 16][x1 + x - 8][2] = 0x34;
+				vBuffer[sl][x1 + x - 8][0] = 0x56;
+				vBuffer[sl][x1 + x - 8][1] = 0x68;
+				vBuffer[sl][x1 + x - 8][2] = 0x34;
 				break;
 			case 1:
-				vBuffer[y1 + (7 - y) - 16][x1 + x - 8][0] = 0x70;
-				vBuffer[y1 + (7 - y) - 16][x1 + x - 8][1] = 0xC0;
-				vBuffer[y1 + (7 - y) - 16][x1 + x - 8][2] = 0x88;
+				vBuffer[sl][x1 + x - 8][0] = 0x70;
+				vBuffer[sl][x1 + x - 8][1] = 0xC0;
+				vBuffer[sl][x1 + x - 8][2] = 0x88;
 				break;
 			case 0:
-				vBuffer[y1 + (7 - y) - 16][x1 + x - 8][0] = 0xD0;
-				vBuffer[y1 + (7 - y) - 16][x1 + x - 8][1] = 0xF8;
-				vBuffer[y1 + (7 - y) - 16][x1 + x - 8][2] = 0xE0;
+				vBuffer[sl][x1 + x - 8][0] = 0xD0;
+				vBuffer[sl][x1 + x - 8][1] = 0xF8;
+				vBuffer[sl][x1 + x - 8][2] = 0xE0;
 				break;//white
 			}
 		}
@@ -473,9 +486,9 @@ void flipSpriteH(uchar tile, uchar colorPalette, uchar x1, uchar y1, uchar prio)
 void flipSpriteVH(uchar tile, uchar colorPalette, uchar x1, uchar y1, uchar prio) {
 	uchar y, x, p1, p2, p3, C1, C2;
 
-		y = sl - (y1 - 16);
-		C1 = readMem(0x8000 + tile * 16 + y * 2);	// design data 2 bytes
-		C2 = readMem(0x8000 + tile * 16 + y * 2 + 1);
+		y = sl - y1 + 16;
+		C1 = readMem(0x8000 + tile * 16 + (7-y) * 2);	// design data 2 bytes
+		C2 = readMem(0x8000 + tile * 16 + (7-y) * 2 + 1);
 
 		for (x = 0; x < 8; x++)
 		{
@@ -489,30 +502,32 @@ void flipSpriteVH(uchar tile, uchar colorPalette, uchar x1, uchar y1, uchar prio
 
 			p3 = (colorPalette >> 2 * p3) & 0x3;
 
+			uchar newX = (x1 + x - 8);
+
 			if (prio && (vBuffer[sl][x1 + x - 8][0] != 0xD0)) //if the backgound isn't white
 				continue;
 
 			switch (p3)
 			{
 			case 3:
-				vBuffer[y1 + (7 - y) - 16][x1 + x - 8][0] = 0x20;//black
-				vBuffer[y1 + (7 - y) - 16][x1 + x - 8][1] = 0x18;
-				vBuffer[y1 + (7 - y) - 16][x1 + x - 8][2] = 0x08;
+				vBuffer[sl][x1 + x - 8][0] = 0x20;//black
+				vBuffer[sl][x1 + x - 8][1] = 0x18;
+				vBuffer[sl][x1 + x - 8][2] = 0x08;
 				break;
 			case 2:
-				vBuffer[y1 + (7 - y) - 16][x1 + x - 8][0] = 0x56;
-				vBuffer[y1 + (7 - y) - 16][x1 + x - 8][1] = 0x68;
-				vBuffer[y1 + (7 - y) - 16][x1 + x - 8][2] = 0x34;
+				vBuffer[sl][x1 + x - 8][0] = 0x56;
+				vBuffer[sl][x1 + x - 8][1] = 0x68;
+				vBuffer[sl][x1 + x - 8][2] = 0x34;
 				break;
 			case 1:
-				vBuffer[y1 + (7 - y) - 16][x1 + x - 8][0] = 0x70;
-				vBuffer[y1 + (7 - y) - 16][x1 + x - 8][1] = 0xC0;
-				vBuffer[y1 + (7 - y) - 16][x1 + x - 8][2] = 0x88;
+				vBuffer[sl][x1 + x - 8][0] = 0x70;
+				vBuffer[sl][x1 + x - 8][1] = 0xC0;
+				vBuffer[sl][x1 + x - 8][2] = 0x88;
 				break;
 			case 0:
-				vBuffer[y1 + (7 - y) - 16][x1 + x - 8][0] = 0xD0;
-				vBuffer[y1 + (7 - y) - 16][x1 + x - 8][1] = 0xF8;
-				vBuffer[y1 + (7 - y) - 16][x1 + x - 8][2] = 0xE0;
+				vBuffer[sl][x1 + x - 8][0] = 0xD0;
+				vBuffer[sl][x1 + x - 8][1] = 0xF8;
+				vBuffer[sl][x1 + x - 8][2] = 0xE0;
 				break;//white
 			}
 		}

@@ -19,10 +19,11 @@ typedef unsigned long ulong;
 #define HL (CPU.H << 8 | CPU.L)
 #define DE (CPU.D << 8 | CPU.E)
 #define BC (CPU.B << 8 | CPU.C)
-#define AF (CPU.A << 8 | CPU.Flags)
+#define AF (CPU.A << 8 | (CPU.Flags & 0xF0))
 
+
+#define Vy 154
 #define Vx 166
-#define Vy 155
 #define Winh 144
 #define Winw 160
 #define xoff readMem(0xFF43)
