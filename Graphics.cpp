@@ -10,6 +10,7 @@ SDL_Window * window, * Tiles;
 SDL_Renderer * renderer, * rend;
 uchar vBuffer[144][160][3];
 uchar sl = 0;
+uchar framesPerSecond = 0;
 
 
 ///SDL Grpahics Handlers 
@@ -35,8 +36,6 @@ void exitGraphics() {
 	SDL_Quit();
 }
 
-ushort frames = 0;
-
 ///Updates VideoBuffer with new scanline values. Prints frame when scanline resets. Deals with Background and Window
 void NextGraphic()
 {
@@ -46,6 +45,7 @@ void NextGraphic()
 
 	static clock_t t1 = clock();
 	static uchar fps = 0;
+	static ushort frames = 0;
 
 	//while (1) 
 	{
@@ -53,7 +53,9 @@ void NextGraphic()
 			if (clock() - t1 > 1000)
 			{
 				t1 = clock();
+				framesPerSecond = fps;
 				printf("FPS: %d\n", fps);
+				//printf("%d", getCPUTicks());
 				fps = 0;
 			}
 		//} while (fps > 59);//frame locking*/
@@ -632,4 +634,8 @@ void printSTable() {
 
 uchar getSL() {
 	return sl;
+}
+
+uchar getfps() {
+	return framesPerSecond;
 }

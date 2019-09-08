@@ -2,31 +2,159 @@
 #include "Memory.h"
 #include "CPU.h"
 #include "defs.h"
+#include "Graphics.h"
+#include "Timer.h"
 #include <math.h>
+#include <iostream>
 
-
-
-struct MyAudioEngine
+class AudioBaseClass
 {
-	SDL_AudioSpec spec;
-	Uint16 freq = 0, time = 0, mode = 0, mute = 0;
-	//#define delta_t 1/(45128.0f)
-	//#define delta_t 1/(44100.0f)
-	#define delta_t 44100
+public://protected:
+		SDL_AudioSpec spec;
+		SDL_AudioDeviceID dev;
+		Uint16 freq = 0, time = 0; 
+		Uint16 playing = 0, durationEnabled = 0, soundDuration = 0, stopped = 0;
+	public:
+		uchar mode = 0, mute = 0;
+		AudioBaseClass()
+		{
+			spec.freq = 44100;//not actual sound frequency by audio rate
+			#define delta_t spec.freq //looks like if i have this modify the freq to match the frame rate i might be able to have it sound proper
+			spec.format = AUDIO_F32SYS;//range of -1 to 1, .1 works best
+			spec.channels = 1;//audio channels every other depends on which channel to use might change later to 2, will require more need more work
+			spec.samples = 16;//buffer size, larger buffer less time in callback
+			spec.userdata = this;
+		}
 
-	MyAudioEngine()
+		void initSound() {
+			dev = SDL_OpenAudioDevice(nullptr, 0, &spec, &spec, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
+		}
+
+		void play() {
+
+			std::cout << "play\n";
+			SDL_PauseAudioDevice(dev, 0);
+		}
+
+		void pause() {
+			SDL_PauseAudioDevice(dev, 1);
+		}
+};
+
+class LFSR {
+	private:
+		ushort shiftReg;
+
+		void clockRegister() {
+			uchar result;
+			result = (shiftReg & 0x1) ^ (shiftReg & 0x2);
+			shiftReg |= (result << 15);
+			if (readMem(0xFF22) & 0x8) {
+				if (result)
+					shiftReg |= 0x80;
+				else
+					shiftReg &= ~0x80;
+			}
+			shiftReg >>= 1;
+		}
+
+	public:
+
+		void init() {
+			shiftReg = 0x7FFF;
+		}
+
+		uchar note() {
+			return shiftReg & 0x1;
+		}
+
+		void update() {
+			static ulong clockDiv = 0;
+			static ulong cpuTickStamp = 0;
+			if (getCPUTicks() - cpuTickStamp >= clockDiv) {
+
+				uchar Chan4Polynomial = readMem(0xFF22);
+				uchar clockShiftReg = (Chan4Polynomial & 0xF0) >> 4;
+				uchar clockDivReg = Chan4Polynomial & 0x07;
+
+				clockDiv = (clockDivReg == 0) ? 4 : clockDivReg * 4;
+				clockDiv = clockDiv / (clockDiv * (2 << ((clockDivReg > 14) ? 14 : clockDivReg)));
+				cpuTickStamp = getCPUTicks();
+				clockRegister();
+			}
+		}
+};
+
+class NoiseChannel : public AudioBaseClass {
+	public:
+		LFSR shiftReg;
+	
+		NoiseChannel() : AudioBaseClass() {
+			spec.callback = [](void* param, Uint8* stream, int len)
+			{
+				((NoiseChannel*)param)->callback((float *)stream, len / sizeof(int));
+			};
+			initSound();
+			play();
+		}
+
+	void callback(float* target, int num_samples)
 	{
-		spec.freq = 44100;//not actual sound frequency by audio rate
-		spec.format = AUDIO_F32SYS;//range of -1 to 1, .1 works best
-		spec.channels = 1;//audio channels every other depends on which channel to use might change later to 2, will require more need more work
-		spec.samples = 16;//buffer size, larger buffer less time in callback
-		spec.userdata = this;//pointer passed to callback function
+		float sample = 0;
+		for (int position = 0; position < num_samples; position++)
+		{
+			
+			if (mute == 0)
+				sample = 0;
+			else
+				sample = shiftReg.note();
+			time = (++time) % delta_t;
+			target[position] = sample;
+		}
+	}
+
+	
+};
+
+class SineChannel : public AudioBaseClass {
+	public:
+		SineChannel() : AudioBaseClass() {
+			spec.callback = [](void* param, Uint8* stream, int len)
+			{
+				((SineChannel*)param)->callback((float *)stream, len / sizeof(int));
+			};
+			initSound();
+			play();
+		}
+
+	void callback(float* target, int num_samples)
+	{
+		float sample = 0;
+		Uint16 pitch = this->freq;
+		for (int position = 0; position < num_samples; position++)
+		{
+
+			if (mute == 0)
+				sample = 0;
+			else
+				sample = 0.2f * sin(M_PI * 2 * pitch * time / (float)delta_t);
+			time = (++time) % delta_t;
+			target[position] = sample;
+		}
+	}
+
+
+};
+
+class SquareChannel : public AudioBaseClass {
+public:
+	SquareChannel() : AudioBaseClass() {
 		spec.callback = [](void* param, Uint8* stream, int len)
 		{
-			((MyAudioEngine*)param)->callback((float *)stream, len / sizeof(int));
+			((SquareChannel*)param)->callback((float *)stream, len / sizeof(int));
 		};
-		SDL_AudioDeviceID dev = SDL_OpenAudioDevice(nullptr, 0, &spec, &spec, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
-		SDL_PauseAudioDevice(dev, 0);
+		initSound();
+		play();
 	}
 
 	void callback(float* target, int num_samples)
@@ -38,32 +166,24 @@ struct MyAudioEngine
 			if (mute == 0)
 				sample = 0;
 			else
-			{
-				if (mode == 0)
-					sample = sin(M_PI * 2 * pitch * time / (float)delta_t) < 0 ? -0.1f / sqrt(2) : 0.1f / sqrt(2);
-				else
-					sample = 0.1f * sin(M_PI * 2 * pitch * time / (float)delta_t);
-				time = (++time) % delta_t;
-			}			
+				sample = sin(M_PI * 2 * pitch * time / (float)delta_t) < 0 ? -0.2f : 0.2f;
+			time = (++time) % delta_t;
 			target[position] = sample;
 		}
 	}
-
 };
 
-MyAudioEngine * soundMixer1;
-MyAudioEngine * soundMixer2;
-MyAudioEngine * soundMixer3;
+SquareChannel * square1;
+SquareChannel *square2;
+SineChannel * sine;
+NoiseChannel * noise;
 
-ushort binToFreq(ushort bin) {
-	return 131072 / (2048 - bin);
-}
 
 int initSound() {
-	soundMixer1 = new MyAudioEngine;
-	soundMixer2 = new MyAudioEngine;
-	soundMixer3 = new MyAudioEngine;
-	soundMixer3->mode = 1;
+	square1 = new SquareChannel;
+	square2 = new SquareChannel;
+	sine = new SineChannel;
+	noise = new NoiseChannel;
 	return 0; //change this to an error if it fails
 }
 
@@ -74,7 +194,7 @@ void soundChannel1(){
 	uchar sweepShift = Chan1Sweep & 0x07;
 
 	uchar Chan1Sound = readMem(0xFF11);
-	uchar dutyCycle = (Chan1Sound & 0xB0) >> 6;
+	uchar dutyCycle = (Chan1Sound & 0xC0) >> 6;	//singal volume control 12.5,25,50,75 50 normal
 	uchar soundLength = Chan1Sound & 0x3F;
 
 	uchar Chan1Envelope = readMem(0xFF12);
@@ -88,12 +208,15 @@ void soundChannel1(){
 	uchar counterConsecutive = (Chan1FreqHigh & 0x40) >> 6;
 	ushort freq = ((Chan1FreqHigh & 0x07) << 8) | Chan1FreqLow;
 
-	soundMixer1->freq = binToFreq(freq);
+	square1->freq = 131072 / (2048 - freq);
+	square1->durationEnabled = counterConsecutive;
+	square1->soundDuration = (64 - soundLength) * (1 / 256.0f);
+
 }
 
 void soundChannel2() {
 	uchar Chan2Sound = readMem(0xFF16);
-	uchar dutyCycle = (Chan2Sound & 0xB0) >> 6;
+	uchar dutyCycle = (Chan2Sound & 0xC0) >> 6;
 	uchar soundLength = Chan2Sound & 0x3F;
 
 	uchar Chan2Envelope = readMem(0xFF17);
@@ -107,7 +230,9 @@ void soundChannel2() {
 	uchar counterConsecutive = (Chan2FreqHigh & 0x40) >> 6;
 	ushort freq = ((Chan2FreqHigh & 0x07) << 8) | Chan2FreqLow;
 
-	soundMixer2->freq = binToFreq(freq);
+	square2->freq = 131072 / (2048 - freq);
+	square2->durationEnabled = counterConsecutive;
+	square2->soundDuration = (64 - soundLength) * (1 / 256.0f);
 }
 
 void soundChannel3() {
@@ -142,7 +267,9 @@ void soundChannel3() {
 	uchar Chan3Pattern14 = readMem(0xFF3E);
 	uchar Chan3Pattern15 = readMem(0xFF3F);
 
-	soundMixer3->freq = binToFreq(freq);
+	sine->freq = 65536 / (2048 - freq);
+	sine->durationEnabled = counterConsecutive;
+	sine->soundDuration = (64 - Chan3Length) * (1 / 256.0f);
 }
 
 void soundChannel4() {
@@ -153,11 +280,6 @@ void soundChannel4() {
 	uchar initalVolume = (Chan4Envelope & 0xF0) >> 4;
 	uchar volumeInc = (Chan4Envelope & 0x08) >> 3;
 	uchar totalSweeps = Chan4Envelope & 0x07;
-
-	uchar Chan4Polynomial = readMem(0xFF22);
-	uchar shiftFreq = (Chan4Polynomial & 0xF0) >> 4;
-	uchar counterWidth = (Chan4Polynomial & 0x08) >> 3;
-	uchar dividingRatio = Chan4Polynomial & 0x03;
 
 	uchar Chan4Inital = readMem(0xFF23);
 	uchar reset = (Chan4Inital & 0x80) >> 7;
@@ -174,33 +296,24 @@ void soundMaster() {
 	uchar SoundMaster = readMem(0xFF26);
 	uchar SoundEnabled = (SoundMaster & 0x80) >> 7;
 
-	soundMixer1->mute = SoundEnabled;
-	soundMixer2->mute = SoundEnabled;
-	soundMixer3->mute = SoundEnabled;
+	square1->mute = SoundEnabled;
+	square2->mute = SoundEnabled;
+	sine->mute = SoundEnabled;
+	noise->mute = SoundEnabled;
 }
 
-
 void updateSound() {
+	
+	static ushort counter = 0;
+	noise->shiftReg.update();
 	//Might want to limit the call rate of function for less cpu utilization and faster speed or make it threaded.
+	if (++counter < FRAMESPERSEC / 100)//update audio every .01 of a second of cpu speed time helps with fps time might need to be reduced if higher update rate is needed
+		return;
 
+	counter = 0;
 	soundChannel1();
 	soundChannel2();
 	soundChannel3();
 	soundChannel4();
 	soundMaster();
-}
-
-
-
-//might change later as parameters for each mixer of as function calls
-double sineWave(int freq, double amp,double delta_t1) {
-	return amp * sin(M_PI * 2 * freq * delta_t1);
-}
-
-double squareWave(int freq, double amp, double delta_t1) {
-	return sin(M_PI * 2 * freq * delta_t1) > 0 ? amp : -amp;
-}
-
-double whiteNoise() {
-
 }

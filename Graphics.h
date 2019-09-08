@@ -23,4 +23,5 @@ void printVTable();
 void printSTable();
 
 uchar getSL();
+uchar getfps();
 #endif

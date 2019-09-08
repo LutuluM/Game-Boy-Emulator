@@ -15,7 +15,7 @@ typedef struct gbcpu{
 	ushort PC;
 	uchar IME;
 	uchar halt;
-	ulong CPUTicks;
+	volatile ulong CPUTicks;
 }GBCPU;
 
 ushort getPC();
