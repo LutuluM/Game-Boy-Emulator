@@ -5,6 +5,9 @@
 
 
 extern uchar debug;
+extern SquareChannel1 * square1;
+extern SquareChannel2 * square2;
+extern NoiseChannel * noise;
 extern SineChannel * sine;
 
 ///Loaded Roms
@@ -234,16 +237,39 @@ void writeMem(ushort location, uchar data) {
 			IO[0x04] = 0;
 			divReset();
 			break;
-		case 0xFF41:
-			IO[0x41] = (data & 0xF8) | (IO[0x41] & 0x07);
+
+		case 0xFF10:
+			square1->soundOnReg(data);
 			break;
-		case 0xFF46:
-			DMA(data);
+		case 0xFF11:
+			square1->soundLengthReg(data);
 			break;
-		case 0xFF50:
-			Booting = 0;
-			IO[0x50] = data;
+		case 0xFF12:
+			square1->soundVolReg(data);
 			break;
+		case 0xFF13:
+			square1->soundFreqLowReg(data);
+			break;
+		case 0xFF14:
+			square1->soundFreqHiReg(data);
+			break;
+
+		case 0xFF15:
+			square2->soundOnReg(data);
+			break;
+		case 0xFF16:
+			square2->soundLengthReg(data);
+			break;
+		case 0xFF17:
+			square2->soundVolReg(data);
+			break;
+		case 0xFF18:
+			square2->soundFreqLowReg(data);
+			break;
+		case 0xFF19:
+			square2->soundFreqHiReg(data);
+			break;
+
 		case 0xFF1A:
 			sine->soundOnReg(data);
 			break;
@@ -258,6 +284,37 @@ void writeMem(ushort location, uchar data) {
 			break;
 		case 0xFF1E:
 			sine->soundFreqHiReg(data);
+			break;
+
+		case 0xFF1F:
+			noise->soundOnReg(data);
+			break;
+		case 0xFF20:
+			noise->soundLengthReg(data);
+			break;
+		case 0xFF21:
+			noise->soundVolReg(data);
+			break;
+		case 0xFF22:
+			noise->soundPolyReg(data);
+			break;
+		case 0xFF23:
+			noise->soundCounterReg(data);
+			break;
+
+		case 0xFF26:
+			masterSoundEnable(data);
+			break;
+
+		case 0xFF41:
+			IO[0x41] = (data & 0xF8) | (IO[0x41] & 0x07);
+			break;
+		case 0xFF46:
+			DMA(data);
+			break;
+		case 0xFF50:
+			Booting = 0;
+			IO[0x50] = data;
 			break;
 
 		default:
