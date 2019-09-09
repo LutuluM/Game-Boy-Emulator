@@ -1,2 +1,0 @@
-int initSound();
-void updateSound();

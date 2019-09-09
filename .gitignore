@@ -3,3 +3,8 @@
 ################################################################################
 
 /.vs/Game-Boy-Emulator/v15
+/.vs
+/SDLGameBoy/games
+/SDLGameBoy/x64
+/SDLGameBoy/bios.bin
+/x64/Release
