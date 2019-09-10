@@ -32,7 +32,7 @@ public:
 protected:
 	SDL_AudioSpec spec;
 	SDL_AudioDeviceID dev;
-	uchar soundEnable, soundDuration, freqLow, freqHi, counterEnable, masterEnable;
+	uchar soundEnable, soundDuration, freqLow, freqHi, counterEnable, masterEnable, channelEnable;
 	ushort frequency;
 	ushort time;
 	ushort lastDecDuty;
@@ -66,6 +66,8 @@ private:
 	uchar sweepTime, sweepType, sweetNum;
 	uchar duty;
 	uchar envInitVol, envType, envNum;
+	ulong lastVolStep;
+	//uchar amp,shadowAudioReg;
 	void callback(float* target, int num_samples);
 	float waveAudio();
 	void resetAudio();

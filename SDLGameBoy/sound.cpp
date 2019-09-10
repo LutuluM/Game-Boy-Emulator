@@ -107,10 +107,13 @@ void SquareChannel1::callback(float* target, int num_samples){
 	for (int position = 0; position < num_samples; position++){
 		if (masterEnable == 0)
 			sample = 0;
+		else if (channelEnable == 0)
+			sample = 0;
 		else if (counterEnable){
 			if (duty == 0){
 				sample = 0;
 				lastDecDuty = time;
+				channelEnable = 0;
 			}
 			else {
 				sample = waveAudio();
@@ -127,10 +130,31 @@ void SquareChannel1::callback(float* target, int num_samples){
 	}
 }
 float SquareChannel1::waveAudio() {
-	return sin(M_PI * 2 * frequency * time / (float)delta_t) < 0 ? -0.2f : 0.2f;
+	float amp;
+	if (envNum) {
+		if (time - lastVolStep >= 689 * envNum) {
+			envType ? envInitVol-- : envInitVol++;
+			envNum--;
+			soundMemWrite(0x12, (envInitVol << 4) | (envType << 3) | envNum);
+			lastVolStep = time;
+		}
+		amp = envInitVol / 15.0f;
+	}
+	else
+		amp = 1;
+	return sin(M_PI * 2 * frequency * time / (float)delta_t) < 0 ? -0.2f * amp: 0.2f * amp;
 }
 void SquareChannel1::resetAudio() {
-	;
+	if (soundDuration == 0) {
+		soundDuration = 63;
+	}
+	soundMemWrite(0x11, (duty << 6) | soundDuration);
+	
+	envNum = 0x7;
+	envInitVol = 0xF;
+	soundMemWrite(0x12, (envInitVol << 4) | (envType << 3) | envNum);
+
+	channelEnable = 1;
 };
 
 SquareChannel2::SquareChannel2() : AudioBaseClass() {
@@ -173,10 +197,13 @@ void SquareChannel2::callback(float* target, int num_samples) {
 	for (int position = 0; position < num_samples; position++) {
 		if (masterEnable == 0)
 			sample = 0;
+		else if (channelEnable == 0)
+			sample = 0;
 		else if (counterEnable) {
 			if (duty == 0) {
 				sample = 0;
 				lastDecDuty = time;
+				channelEnable = 0;
 			}
 			else {
 				sample = waveAudio();
@@ -196,7 +223,7 @@ float SquareChannel2::waveAudio() {
 	return sin(M_PI * 2 * frequency * time / (float)delta_t) < 0 ? -0.2f : 0.2f;
 }
 void SquareChannel2::resetAudio() {
-	;
+	channelEnable = 1;
 };
 
 SineChannel::SineChannel() : AudioBaseClass() {
@@ -239,12 +266,15 @@ void SineChannel::callback(float* target, int num_samples)
 	{
 		if (masterEnable == 0)
 			sample = 0;
+		else if (channelEnable == 0)
+			sample = 0;
 		else if (counterEnable)
 		{
 			if (soundDuration == 0)
 			{
 				sample = 0;
 				lastDecDuty = time;
+				channelEnable = 0;
 			}
 			else {
 				sample = waveAudio();
@@ -276,7 +306,7 @@ float SineChannel::waveAudio() {
 	}
 }
 void SineChannel::resetAudio() {
-	;
+	channelEnable = 1;
 };
 
 NoiseChannel::NoiseChannel() : AudioBaseClass() {
@@ -322,16 +352,36 @@ void NoiseChannel::callback(float* target, int num_samples)
 
 		if (masterEnable == 0)
 			sample = 0;
+		else if (channelEnable == 0)
+			sample = 0;
+		else if (counterEnable)
+		{
+			if (soundDuration == 0)
+			{
+				sample = 0;
+				lastDecDuty = time;
+				channelEnable = 0;
+			}
+			else {
+				sample = waveAudio();
+				if (time - lastDecDuty >= 172)
+				{
+					soundMemWrite(0x20, (readMem(0xFF20) & 0xC0) | --soundDuration);
+					lastDecDuty = time;
+				}
+			}
+		}
 		else
 			sample = waveAudio();
 		target[position] = sample;
 	}
 }
 float NoiseChannel::waveAudio() {
-	return (shiftReg.note()) ? -.2f : .2;
+	return (shiftReg.note()) ? .2f : -.2;
 }
 void NoiseChannel::resetAudio() {
 	shiftReg.init();
+	channelEnable = 1;
 };
 
 SquareChannel1 * square1;
@@ -356,7 +406,7 @@ void soundMaster() {
 }
 
 void updateSound() {
-	noise->update();//Might be the only function needed since everything else should be either triggered by mem writes of in a seperate thread
+	noise->update();//Might be the only function needed since everything else should be either triggered by mem writes or in a seperate thread
 	
 	
 	//Might be able to remove these functions
@@ -369,10 +419,12 @@ void updateSound() {
 
 void masterSoundEnable(uchar input) {
 	uchar enable = input >> 7;
-	///comment lines to disable channels
-	square1->soundEnabled(enable);
-	square2->soundEnabled(enable);
-	sine->soundEnabled(enable);
-	//noise->soundEnabled(enable);
-	soundMemWrite(0x26, input);
+	/*comment lines to disable channels
+		This is the master enable, disable audio because circuit would be off	
+	*/
+	//square1->soundEnabled(enable);
+	//square2->soundEnabled(enable);
+	//sine->soundEnabled(enable);
+	noise->soundEnabled(enable);
+	soundMemWrite(0x26, (input & 0x80) | (readMem(0xFF26) & 0x0F)); //only bit 7 gets written from direct writes
 }

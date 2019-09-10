@@ -274,6 +274,7 @@ void Timer() {//Fix this shit
 		printf("current DivTotal is %X\n", DivCount);
 		printf("current Div is %X\n", readMem(0xFF04));
 		printf("current CPUTick is %X\n", getCPUTicks());
+		dumpMem(0xFF10, 5);
 	}
 	//if (getPC() > 0x63) printf("SL is %X Video is %X\n", getSL(),readMem(0xFF41));
 	/*if (getPC() == 0x6D || getPC() == 0x8b)

@@ -18,18 +18,18 @@ uchar * GameCode;
 ///Memory Map
 uchar * Rom0;
 uchar * Rom1;
-uchar Vram[0x2000];
+uchar Vram[0x2000]{ 0 };
 uchar * CartRam;
-uchar CartRamBank[0x8000];
-uchar Wram0[0x1000];
+uchar CartRamBank[0x8000]{ 0 };
+uchar Wram0[0x1000]{ 0 };
 uchar * Wram1;
 uchar WramBank[0x8000];//only swappable when in cgb mode. so not used
 uchar * WramEcho;
-uchar SAtable[0xa0];
-uchar notused[0x60];
-uchar IO[0x80];
-uchar Hram[0x7f];
-uchar Interrupt[1];
+uchar SAtable[0xa0]{ 0 };
+uchar notused[0x60]{ 0 };
+uchar IO[0x80] = {0};
+uchar Hram[0x7f]{ 0 };
+uchar Interrupt[1]{ 0 };
 
 ///Other Variables
 uchar Ramenable;
