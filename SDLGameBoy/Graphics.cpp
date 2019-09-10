@@ -18,7 +18,7 @@ void initGraphics() {
 
 	SDL_Init(SDL_INIT_EVERYTHING);
 
-	window = SDL_CreateWindow("Test", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, Winw, Winh, SDL_WINDOW_VULKAN);//SDL_WINDOW_OPENGL);
+	window = SDL_CreateWindow("Test", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, Winw, Winh, SDL_WINDOW_OPENGL);//SDL_WINDOW_VULKAN);//SDL_WINDOW_OPENGL);
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 	
 	/*Tiles = SDL_CreateWindow("Tiles", 809 + Winw, 10, 16 * 8 * 2, 12 * 8 * 2, SDL_WINDOW_OPENGL);
@@ -127,10 +127,6 @@ void NextGraphic()
 				break;
 		}
 		setLCDC((readMem(0xFF41) & 0xFC) | Mode); //change videomode
-	}
-	if (getPC() == 0x100)
-	{
-		printf("Frame Count: %d\n", frames);
 	}
 }
 //Prints a row of pixels for the Background to the video buffer

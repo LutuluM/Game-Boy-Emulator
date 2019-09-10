@@ -33,9 +33,9 @@ protected:
 	SDL_AudioSpec spec;
 	SDL_AudioDeviceID dev;
 	uchar soundEnable, soundDuration, freqLow, freqHi, counterEnable, masterEnable, channelEnable;
+	float amp;
 	ushort frequency;
 	ushort time;
-	ushort lastDecDuty;
 };
 
 class SineChannel : public AudioBaseClass {
@@ -63,14 +63,17 @@ public:
 	void soundFreqLowReg(uchar input);
 	void soundFreqHiReg(uchar input);
 private:
-	uchar sweepTime, sweepType, sweetNum;
-	uchar duty;
-	uchar envInitVol, envType, envNum;
-	ulong lastVolStep;
-	//uchar amp,shadowAudioReg;
+	uchar sweepTime, sweepType, sweepNum;	//first reg variables
+	uchar sweepEnable, sweepShifts;
+	ushort shadowAudioReg;
+
+	uchar duty;								//second reg variables
+	uchar envInitVol, envType, envNum;		//third reg variables
+	
 	void callback(float* target, int num_samples);
 	float waveAudio();
 	void resetAudio();
+	void timerUpdate();
 };
 
 class SquareChannel2 : public AudioBaseClass {

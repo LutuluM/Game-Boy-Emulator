@@ -267,7 +267,7 @@ void Timer() {//Fix this shit
 		DivCountOld = DivCount;//save the divider time
 		setDivTimer(DivCount >> 8);//Update Div Reg
 	}
-	if (getPC() == 0x100)
+	/*if (getPC() == 0x100)
 	{
 		printf("Reg A is 0x%.4X\n", getReg(0));
 		printf("current passedTime is %X\n", pTime);
@@ -275,7 +275,7 @@ void Timer() {//Fix this shit
 		printf("current Div is %X\n", readMem(0xFF04));
 		printf("current CPUTick is %X\n", getCPUTicks());
 		dumpMem(0xFF10, 5);
-	}
+	}*/
 	//if (getPC() > 0x63) printf("SL is %X Video is %X\n", getSL(),readMem(0xFF41));
 	/*if (getPC() == 0x6D || getPC() == 0x8b)
 	{
