@@ -22,3 +22,19 @@
 /SDLGameBoy/gb-test-roms-master/dmg_sound/rom_singles/02-len ctr.gb
 /SDLGameBoy/gb-test-roms-master/dmg_sound/rom_singles/01-registers.gb
 /SDLGameBoy/gb-test-roms-master/dmg_sound/dmg_sound.gb
+/SDLGameBoy/soundtest/wave write while on.gb
+/SDLGameBoy/soundtest/wave trigger while on.gb
+/SDLGameBoy/soundtest/wave read while on.gb
+/SDLGameBoy/soundtest/trigger.gb
+/SDLGameBoy/soundtest/sweep.sav
+/SDLGameBoy/soundtest/sweep.gb
+/SDLGameBoy/soundtest/sweep details.gb
+/SDLGameBoy/soundtest/regs after power.sav
+/SDLGameBoy/soundtest/regs after power.gb
+/SDLGameBoy/soundtest/registers.sav
+/SDLGameBoy/soundtest/registers.gb
+/SDLGameBoy/soundtest/overflow on trigger.gb
+/SDLGameBoy/soundtest/len sweep period sync.gb
+/SDLGameBoy/soundtest/len ctr.gb
+/SDLGameBoy/soundtest/len ctr during power.gb
+/SDLGameBoy/soundtest/dmg_sound.gb

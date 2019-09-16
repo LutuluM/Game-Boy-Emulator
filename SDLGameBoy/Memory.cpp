@@ -349,7 +349,7 @@ uchar readMem(ushort location) {
 		{
 			if (RTC)
 			{
-				printf("Real Time Clock was read from @ 0x\X",location);
+				printf("Real Time Clock was read from @ 0x%X",location);
 				return 0x0;//just a random number at this time
 			}
 			else
@@ -443,8 +443,10 @@ uchar * loadROM(char * Romname) {
 
 	fp = fopen(Romname, "rb");
 
-	if (fp == 0)
-		exit(0);
+	if (fp == 0) {
+		printf("failed to load ROM.");
+		exit(-1);
+	}
 
 	fseek(fp, 0, SEEK_END);
 	lSize = ftell(fp);
@@ -468,7 +470,7 @@ void loadBIOS(char * Romname) {
 	if (fp == 0)
 	{
 		printf("BootRom \"%s\" not found",Romname);
-		exit(0);
+		exit(-1);
 	}
 		
 
@@ -492,7 +494,7 @@ void loadGAME(char * Romname) {
 	if (fp == 0)
 	{
 		printf("Game ROM \"%s\" not found", Romname);
-		exit(0);
+		exit(-1);
 	}
 		
 
@@ -532,6 +534,7 @@ void loadSave(char * Romname) {
 	if (fp == 0)
 	{
 		//fclose(fp);
+		printf("No save Found.\n");
 		return;//no save file
 	}
 
@@ -548,8 +551,10 @@ void saveGame() {
 
 	fp = fopen(saveName, "wb");
 
-	if (fp == 0)
-		exit(0);
+	if (fp == 0){
+		printf("failed to create save.");
+		exit(-1);
+	}
 	fwrite(CartRamBank, 1, 0x8000, fp);
 	fclose(fp);
 }
