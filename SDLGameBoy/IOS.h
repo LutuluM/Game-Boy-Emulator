@@ -1,6 +1,7 @@
 #ifndef IOs
 #define IOs
 
+extern uchar running;
 
 void checkIO();
 void keyboard();

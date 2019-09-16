@@ -2,7 +2,7 @@
 
 #ifndef cpuh
 #define cpuh
-typedef struct gbcpu{
+typedef struct {
 	uchar A;
 	uchar B;
 	uchar C;
@@ -17,6 +17,9 @@ typedef struct gbcpu{
 	uchar halt;
 	volatile ulong CPUTicks;
 }GBCPU;
+
+extern uchar debug;
+
 
 ushort getPC();
 ushort getSP();

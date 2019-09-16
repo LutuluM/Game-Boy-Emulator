@@ -3,9 +3,6 @@
 #include <sdl.h>
 #include "defs.h"
 
-int initSound();
-void updateSound();
-void masterSoundEnable(uchar);
 
 class LFSR {
 private:
@@ -20,7 +17,6 @@ public:
 	uchar note();
 	void update();
 };
-
 class AudioBaseClass{
 public:
 	AudioBaseClass();
@@ -37,7 +33,6 @@ protected:
 	ushort frequency;
 	ushort time;
 };
-
 class SineChannel : public AudioBaseClass {
 public:
 	SineChannel();
@@ -53,7 +48,6 @@ private:
 	float waveAudio();
 	void resetAudio();
 };
-
 class SquareChannel1 : public AudioBaseClass {
 public:
 	SquareChannel1();
@@ -75,7 +69,6 @@ private:
 	void resetAudio();
 	void timerUpdate();
 };
-
 class SquareChannel2 : public AudioBaseClass {
 public:
 	SquareChannel2();
@@ -91,7 +84,6 @@ private:
 	float waveAudio();
 	void resetAudio();
 };
-
 class NoiseChannel : public AudioBaseClass {
 public:
 	NoiseChannel();
@@ -109,4 +101,14 @@ private:
 	void resetAudio();
 };
 
+
+extern SquareChannel1 * square1;
+extern SquareChannel2 * square2;
+extern NoiseChannel * noise;
+extern SineChannel * sine;
+
+
+int initSound();
+void updateSound();
+void masterSoundEnable(uchar);
 #endif sound

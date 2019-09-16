@@ -29,6 +29,7 @@ void changeROM1(uchar data);
 void changeRAM1(uchar data);
 void changeROM3(uchar data);
 void changeRAM3(uchar data);
+void initGameMem();
 void initMem();
 void setJoy(uchar A);
 void setLCDC(uchar A);

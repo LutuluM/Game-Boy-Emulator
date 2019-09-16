@@ -4,12 +4,6 @@
 #include "sound.h"
 
 
-extern uchar debug;
-extern SquareChannel1 * square1;
-extern SquareChannel2 * square2;
-extern NoiseChannel * noise;
-extern SineChannel * sine;
-
 ///Loaded Roms
 uchar * Brom;
 uchar * GameCode;
@@ -18,12 +12,12 @@ uchar * GameCode;
 ///Memory Map
 uchar * Rom0;
 uchar * Rom1;
-uchar Vram[0x2000]{ 0 };
+uchar * Vram;
 uchar * CartRam;
-uchar CartRamBank[0x8000]{ 0 };
-uchar Wram0[0x1000]{ 0 };
+uchar * CartRamBank;
+uchar * Wram0;
 uchar * Wram1;
-uchar WramBank[0x8000];//only swappable when in cgb mode. so not used
+uchar * WramBank;//only swappable when in cgb mode. so not used
 uchar * WramEcho;
 uchar SAtable[0xa0]{ 0 };
 uchar notused[0x60]{ 0 };
@@ -413,14 +407,20 @@ void dumpMem(ushort start, ushort bytes)
 	fclose(file);
 }
 
+void initGameMem() {
+	CartRamBank = (uchar *)malloc(0x8000);
+	Wram0 = (uchar *)malloc(0x1000);
+	WramBank = (uchar *)malloc(0x8000);
+}
+
 void initMem() {
+	Vram = (uchar *) malloc(0x2000);
 	Rom0 = &GameCode[0];
 	Rom1 = &GameCode[0x4000];
 	CartRam = &CartRamBank[0];
 	Wram1 = &WramBank[0x1000];
 	WramEcho = &Wram0[0];
 	Ramenable = 0;
-	//setPC(0x100);Booting = 0;
 	Booting = 1;
 	setJoy(0x3F); //clear buttons
 }
@@ -452,7 +452,7 @@ uchar * loadROM(char * Romname) {
 	lSize = ftell(fp);
 	rewind(fp);
 
-	uchar * temp = (uchar *)malloc(lSize);
+	uchar * temp = (uchar *) malloc(lSize);
 	
 	fread(temp, 1, lSize, fp);
 	fclose(fp);
@@ -478,7 +478,7 @@ void loadBIOS(char * Romname) {
 	lSize = ftell(fp);
 	rewind(fp);
 
-	Brom = (uchar *)malloc(lSize);
+	Brom = (uchar *) malloc(lSize);
 	
 	fread(Brom, 1, lSize, fp);
 	fclose(fp);
@@ -502,7 +502,7 @@ void loadGAME(char * Romname) {
 	lSize = ftell(fp);
 	rewind(fp);
 
-	GameCode = (uchar *)malloc(lSize);
+	GameCode = (uchar *) malloc(lSize);
 	
 	fread(GameCode, 1, lSize, fp);
 	fclose(fp);

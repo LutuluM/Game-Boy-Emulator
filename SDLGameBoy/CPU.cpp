@@ -2,12 +2,11 @@
 #include "IOs.h"
 #include "Memory.h"
 
-
 uchar debug;
 
 ///CPU
-GBCPU CPU;
-uchar HLm;
+GBCPU CPU;//Main cpu struct
+uchar HLm;//Value in Memory @ HL 
 
 void initCPU() {
 	CPU.A = 0;

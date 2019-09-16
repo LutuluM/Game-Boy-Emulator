@@ -5,8 +5,6 @@
 #include "Graphics.h"
 #include <SDL.h>
 
-extern uchar debug;
-
 uchar DivReset;
 uchar running;
 
