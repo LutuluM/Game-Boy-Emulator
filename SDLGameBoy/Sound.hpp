@@ -1,5 +1,5 @@
-#ifndef sound
-#define sound
+#ifndef _Sound_hpp
+#define _Sound_hpp
 #include <sdl.h>
 #include "defs.h"
 
@@ -111,4 +111,4 @@ extern SineChannel * sine;
 int initSound();
 void updateSound();
 void masterSoundEnable(uchar);
-#endif sound
+#endif
