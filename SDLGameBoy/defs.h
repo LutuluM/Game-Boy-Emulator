@@ -1,9 +1,9 @@
+#ifndef defsh
+#define defsh
+
 #define _CRT_SECURE_NO_DEPRECATE
 #include "stdio.h"
 #include "stdlib.h"
-
-#ifndef defsh
-#define defsh
 
 typedef unsigned char uchar;
 typedef unsigned short ushort;

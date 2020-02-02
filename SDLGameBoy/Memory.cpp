@@ -1,7 +1,7 @@
 #include "Memory.h"
 #include "CPU.h"
 #include "IOs.h"
-#include "sound.h"
+#include "Sound.hpp"
 
 
 ///Loaded Roms

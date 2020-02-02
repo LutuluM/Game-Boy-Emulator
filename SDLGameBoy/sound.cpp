@@ -1,8 +1,8 @@
-#include "sound.h"
+#include "Sound.hpp"
 #include "Memory.h"
 #include "CPU.h"
 #include "Graphics.h"
-#include "Timer.h"
+#include "TimeSync.hpp"
 #include <math.h>
 
 AudioBaseClass::AudioBaseClass(){

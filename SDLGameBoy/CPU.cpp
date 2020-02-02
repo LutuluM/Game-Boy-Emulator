@@ -170,8 +170,8 @@ void OPSelect()
 			break;
 		case 0x18:  
 			op = OP;
-			if (debug == 1)printf("JR op[%d] \n", (char)op);
-			CPU.PC += (char)op;
+			if (debug == 1)printf("JR op[%d] \n", (signed char)op);
+			CPU.PC += (signed char)op;
 			CPU.CPUTicks += 4;
 			CPU.CPUTicks += 4;
 			CPU.CPUTicks += 4;
@@ -211,11 +211,11 @@ void OPSelect()
 			break;
 		case 0x20:  
 			op = OP;
-			if (debug == 1)printf("JR NZ, op[%d]\n", (char)op);
+			if (debug == 1)printf("JR NZ, op[%d]\n", (signed char)op);
 			if (FlagZ == 0)
 			{
 				CPU.CPUTicks += 4;
-				CPU.PC += (char)op;
+				CPU.PC += (signed char)op;
 			}
 			CPU.CPUTicks += 4;
 			CPU.CPUTicks += 4;
@@ -258,10 +258,10 @@ void OPSelect()
 			break;
 		case 0x28: 
 			op = OP;
-			if (debug == 1)printf("JR Z, op[%d] \n", (char)op);
+			if (debug == 1)printf("JR Z, op[%d] \n", (signed char)op);
 			if (FlagZ == 1)
 			{
-				CPU.PC += (char)op;
+				CPU.PC += (signed char)op;
 				CPU.CPUTicks += 4;
 			}
 			CPU.CPUTicks += 4;
@@ -301,10 +301,10 @@ void OPSelect()
 			break;
 		case 0x30:  
 			op = OP;
-			if (debug == 1)printf("JR NC, op[%d] \n", (char)op);
+			if (debug == 1)printf("JR NC, op[%d] \n", (signed char)op);
 			if (FlagC == 0)
 			{
-				CPU.PC += (char)op;
+				CPU.PC += (signed char)op;
 				CPU.CPUTicks += 4;
 			}
 			CPU.CPUTicks += 4;
@@ -351,10 +351,10 @@ void OPSelect()
 			break;
 		case 0x38:  
 			op = OP;
-			if (debug == 1)printf("JR C, op[%d] \n", (char)op);
+			if (debug == 1)printf("JR C, op[%d] \n", (signed char)op);
 			if (FlagC == 1)
 			{
-				CPU.PC += (char)op;
+				CPU.PC += (signed char)op;
 				CPU.CPUTicks += 4;
 			}
 			CPU.CPUTicks += 4;

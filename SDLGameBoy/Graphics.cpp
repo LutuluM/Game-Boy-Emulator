@@ -260,16 +260,6 @@ void printWindowTiles() {//reorder for speed or leave it as a more read able sec
 			}
 	}
 }
-//Prints single line to screen. Obsolete for now
-void printBuffer() {
-	uchar x;
-	for (x = 0; (x < Winw) && (sl < Winh); x++)
-	{
-		SDL_SetRenderDrawColor(renderer, vBuffer[sl][x][0], vBuffer[sl][x][1], vBuffer[sl][x][2], 0xFF);
-		SDL_RenderDrawPoint(renderer, x, sl);
-	}
-	SDL_RenderPresent(renderer);
-}
 //Prints entire frame to screen
 void printFrame(){
 	uchar x,y;
@@ -630,8 +620,4 @@ void printSTable() {
 
 uchar getSL() {
 	return sl;
-}
-
-uchar getfps() {
-	return framesPerSecond;
 }

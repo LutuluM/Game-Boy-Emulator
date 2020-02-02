@@ -9,7 +9,6 @@ void exitGraphics();
 void NextGraphic();
 void printBackGroundTiles();
 void printWindowTiles();
-void printBuffer();
 void printFrame();
 
 void printSprites();
@@ -23,5 +22,4 @@ void printVTable();
 void printSTable();
 
 uchar getSL();
-uchar getfps();
 #endif
