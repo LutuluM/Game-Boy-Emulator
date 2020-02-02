@@ -27,11 +27,11 @@ public:
 
 protected:
 	SDL_AudioSpec spec;
-	SDL_AudioDeviceID dev;
-	uchar soundEnable, soundDuration, freqLow, freqHi, counterEnable, masterEnable, channelEnable;
-	float amp;
-	ushort frequency;
-	ushort time;
+	SDL_AudioDeviceID dev = 0;
+	uchar soundEnable = 0, soundDuration = 0, freqLow = 0, freqHi = 0, counterEnable = 0, masterEnable = 0, channelEnable = 0;
+	float amp = 0;
+	ushort frequency = 0;
+	ushort time = 0;
 };
 class SineChannel : public AudioBaseClass {
 public:
@@ -43,10 +43,10 @@ public:
 	void soundFreqHiReg(uchar input);
 
 private:
-	uchar volume;
+	uchar volume = 0;
 	void callback(float* target, int num_samples);
-	float waveAudio();
 	void resetAudio();
+	float waveAudio();
 };
 class SquareChannel1 : public AudioBaseClass {
 public:
@@ -57,17 +57,17 @@ public:
 	void soundFreqLowReg(uchar input);
 	void soundFreqHiReg(uchar input);
 private:
-	uchar sweepTime, sweepType, sweepNum;	//first reg variables
-	uchar sweepEnable, sweepShifts;
-	ushort shadowAudioReg;
+	uchar sweepTime = 0, sweepType = 0, sweepNum = 0;	//first reg variables
+	uchar sweepEnable = 0, sweepShifts = 0;
+	ushort shadowAudioReg = 0;
 
-	uchar duty;								//second reg variables
-	uchar envInitVol, envType, envNum;		//third reg variables
+	uchar duty = 0;										//second reg variables
+	uchar envInitVol = 0, envType = 0, envNum = 0;		//third reg variables
 	
 	void callback(float* target, int num_samples);
-	float waveAudio();
 	void resetAudio();
 	void timerUpdate();
+	float waveAudio();
 };
 class SquareChannel2 : public AudioBaseClass {
 public:
@@ -78,11 +78,11 @@ public:
 	void soundFreqLowReg(uchar input);
 	void soundFreqHiReg(uchar input);
 private:
-	uchar duty;
-	uchar envInitVol, envType, envNum;
+	uchar duty = 0;
+	uchar envInitVol = 0, envType = 0, envNum = 0;
 	void callback(float* target, int num_samples);
-	float waveAudio();
 	void resetAudio();
+	float waveAudio();
 };
 class NoiseChannel : public AudioBaseClass {
 public:
@@ -95,10 +95,10 @@ public:
 	void update();
 private:
 	LFSR shiftReg;
-	uchar envInitVol, envType, envNum;
+	uchar envInitVol = 0, envType = 0, envNum = 0;
 	void callback(float* target, int num_samples);
-	float waveAudio();
 	void resetAudio();
+	float waveAudio();
 };
 
 
