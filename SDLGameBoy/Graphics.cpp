@@ -8,9 +8,9 @@
 
 SDL_Window * window, * Tiles;
 SDL_Renderer * renderer, * rend;
-uchar vBuffer[144][160][3];
+SDL_Texture * gameScreen;
+uchar vBuffer[Winh][Winw][4];
 uchar sl = 0;
-uchar framesPerSecond = 0;
 
 
 ///SDL Grpahics Handlers 
@@ -18,9 +18,11 @@ void initGraphics() {
 
 	SDL_Init(SDL_INIT_EVERYTHING);
 
-	window = SDL_CreateWindow("Test", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, Winw, Winh, SDL_WINDOW_OPENGL);//SDL_WINDOW_VULKAN);//SDL_WINDOW_OPENGL);
+	window = SDL_CreateWindow("Test", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, Winw, Winh, SDL_WINDOW_OPENGL);
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-	
+	gameScreen = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888 ,SDL_TEXTUREACCESS_STREAMING, Winw, Winh);
+	SDL_memset(vBuffer, 0, Winh * Winw * 4);
+
 	/*Tiles = SDL_CreateWindow("Tiles", 809 + Winw, 10, 16 * 8 * 2, 12 * 8 * 2, SDL_WINDOW_OPENGL);
 	rend = SDL_CreateRenderer(Tiles, -1, SDL_RENDERER_ACCELERATED);
 	
@@ -47,87 +49,79 @@ void NextGraphic()
 	static uchar fps = 0;
 	static ushort frames = 0;
 
-	//while (1) 
+	if (clock() - t1 > 1000)
 	{
-		//do{
-			if (clock() - t1 > 1000)
-			{
-				t1 = clock();
-				framesPerSecond = fps;
-				printf("FPS: %d\n", fps);
-				//printf("%d", getCPUTicks());
-				fps = 0;
-			}
-		//} while (fps > 59);//frame locking*/
-
-		elapsedTime = getCPUTicks() - videoTicks;
-		
-		switch (Mode)//2->3->0->1
-		{
-			case 0://h-blank 204
-				if (elapsedTime > 203)
-				{
-					if ((readMem(0xFF40) & 0x80) != 0x80)//lcd off
-					{
-						videoTicks += 204;
-						//Mode = 1;
-						break;
-					}
-
-					printBackGroundTiles();	//prints background for current scanline
-					printWindowTiles(); //print window for current scanline
-					printSprites(); //prints sprites to buffer of current scanline
-					//printBuffer();	//prints current scanlin of screen buffer, replaced with full frame printing for being slow
-					
-					sl++;
-					if (sl >= Winh) //V-Blank start
-					{
-						writeMem(0xFF0F, readMem(0xFF0F) | 1);
-						printFrame(); //prints a full frame
-						frames++;
-						fps++;
-						Mode = 1;
-					}
-					else//Next Line
-						Mode = 2;
-						
-					writeMem(0xFF44, sl);//update LCD Y-Coordinate
-					videoTicks += 204;
-				}
-				break;
-			case 1://v-blank 4560
-				if ((readMem(0xFF40) & 0x80) == 0x80)//lcd on
-				{
-					if (elapsedTime > 455)
-					{
-						sl++;
-						if (sl == Vy)
-						{
-							sl = 0;
-							Mode = 2;
-						}
-						writeMem(0xFF44, sl);
-						videoTicks += 456;
-					}
-				}
-				break;
-			case 2://transfer 80
-				if (elapsedTime > 79)
-				{
-					videoTicks += 80;
-					Mode = 3;
-				}
-				break;
-			case 3://search 172
-				if (elapsedTime > 171)
-				{
-					videoTicks += 172;
-					Mode = 0;
-				}
-				break;
-		}
-		setLCDC((readMem(0xFF41) & 0xFC) | Mode); //change videomode
+		t1 = clock();
+		printf("FPS: %d\n", fps);
+		fps = 0;
 	}
+
+	elapsedTime = getCPUTicks() - videoTicks;
+		
+	switch (Mode)//2->3->0->1
+	{
+		case 0://h-blank 204
+			if (elapsedTime > 203)
+			{
+				if ((readMem(0xFF40) & 0x80) != 0x80)//lcd off
+				{
+					videoTicks += 204;
+					//Mode = 1;
+					break;
+				}
+
+				printBackGroundTiles();	//prints background for current scanline
+				printWindowTiles(); //print window for current scanline
+				printSprites(); //prints sprites to buffer of current scanline
+					
+				sl++;
+				if (sl >= Winh) //V-Blank start
+				{
+					writeMem(0xFF0F, readMem(0xFF0F) | 1);
+					printFrame(); //prints a full frame
+					frames++;
+					fps++;
+					Mode = 1;
+				}
+				else//Next Line
+					Mode = 2;
+						
+				writeMem(0xFF44, sl);//update LCD Y-Coordinate
+				videoTicks += 204;
+			}
+			break;
+		case 1://v-blank 4560
+			if ((readMem(0xFF40) & 0x80) == 0x80)//lcd on
+			{
+				if (elapsedTime > 455)
+				{
+					sl++;
+					if (sl == Vy)
+					{
+						sl = 0;
+						Mode = 2;
+					}
+					writeMem(0xFF44, sl);
+					videoTicks += 456;
+				}
+			}
+			break;
+		case 2://transfer 80
+			if (elapsedTime > 79)
+			{
+				videoTicks += 80;
+				Mode = 3;
+			}
+			break;
+		case 3://search 172
+			if (elapsedTime > 171)
+			{
+				videoTicks += 172;
+				Mode = 0;
+			}
+			break;
+	}
+	setLCDC((readMem(0xFF41) & 0xFC) | Mode); //change videomode
 }
 //Prints a row of pixels for the Background to the video buffer
 void printBackGroundTiles() {
@@ -262,13 +256,9 @@ void printWindowTiles() {//reorder for speed or leave it as a more read able sec
 }
 //Prints entire frame to screen
 void printFrame(){
-	uchar x,y;
-	for (x = 0; x < Winw; x++)
-		for(y = 0; y < Winh; y++)
-		{
-			SDL_SetRenderDrawColor(renderer, vBuffer[y][x][0], vBuffer[y][x][1], vBuffer[y][x][2], 0xFF);
-			SDL_RenderDrawPoint(renderer, x, y);
-		}
+	SDL_UpdateTexture(gameScreen,NULL,vBuffer,Winw*4);
+	SDL_RenderClear(renderer);
+	SDL_RenderCopy(renderer, gameScreen, 0, 0);
 	SDL_RenderPresent(renderer);
 }
 
