@@ -1,7 +1,7 @@
 # Game-Boy-Emulator
 A simple Game Boy emulator written in c/c++ using SDL2.0 for graphics, audio, and buttons.
 
-This emulator should support most roms that have either no memory controller, mbc1 or mbc3 style memory controllers for the Game Boy. Doesn't support ~~sound or~~ serial communications.
+This emulator should support most roms that have either no memory controller, mbc1 or mbc3 style memory controllers for the Game Boy. Doesn't support serial communications.
 Sound has been added at a basic level. No white noise channel and only frequency is modified for each channel. i.e. no frequency shifting, setting play lengths have basic implimentations, ect. 
 
 Requires the Game Boy bootrom* to run.
@@ -9,9 +9,7 @@ Requires the Game Boy bootrom* to run.
 Confirmed working roms.
 Pokemon Red, Pokemon Blue, Tetris
 
-## TODO  
-~~Fix Event Polling lag~~  
-~~Cap frame Rate~~  
+## TODO
 Final Implimentations of Sound
 Change Audio from reading from registers to variables, register writes to will update vairables of audio channels 
 Double Sprite Rendering  
