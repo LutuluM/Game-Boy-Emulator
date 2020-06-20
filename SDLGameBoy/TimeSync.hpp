@@ -1,4 +1,4 @@
-#define FRAMESPERSEC 4213440
+#define CYCLESPERSEC 4213440
 
 #ifndef _TimeSync
 #define _TimeSync
