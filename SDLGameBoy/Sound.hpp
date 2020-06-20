@@ -1,6 +1,6 @@
 #ifndef _Sound_hpp
 #define _Sound_hpp
-#include <sdl.h>
+#include <SDL2/SDL.h>
 #include "defs.h"
 
 

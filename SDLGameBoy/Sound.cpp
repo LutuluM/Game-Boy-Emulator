@@ -181,7 +181,7 @@ float SquareChannel1::waveAudio() {
         return result < sqrt(2) / 2.0f ? -0.2f : 0.2f;
     case 2:
         return result < 0 ? -0.2f : 0.2f;
-    case 3:
+    default:
         return result < -sqrt(2) / 2.0f ? -0.2f : 0.2f;
     }
 }
@@ -247,7 +247,7 @@ float SquareChannel2::waveAudio() {
         return result < sqrt(2) / 2.0f ? -0.2f : 0.2f;
     case 2:
         return result < 0 ? -0.2f : 0.2f;
-    case 3:
+    default:
         return result < -sqrt(2) / 2.0f ? -0.2f : 0.2f;
     }
 }
@@ -323,7 +323,7 @@ float SineChannel::waveAudio() {
         return 0.2f * sin(soundEnable * M_PI * 2 * frequency * time / (float)delta_t);
     case 2:
         return 0.1f * sin(soundEnable * M_PI * 2 * frequency * time / (float)delta_t);
-    case 3:
+    default:
         return 0.05f * sin(soundEnable * M_PI * 2 * frequency * time / (float)delta_t);
     }
 }

@@ -379,8 +379,6 @@ void flipSpriteV(uchar tile, uchar colorPalette, uchar x1, uchar y1,uchar prio) 
 
             p3 = (colorPalette >> 2 * p3) & 0x3;
 
-            uchar newX = (x1 + x - 8);
-
             if (prio && (vBuffer[sl][x1 + x - 8][0] != 0xD0)) //if the backgound isn't white
                 continue;
 
@@ -429,8 +427,6 @@ void flipSpriteH(uchar tile, uchar colorPalette, uchar x1, uchar y1, uchar prio)
                 continue;
 
             p3 = (colorPalette >> 2 * p3) & 0x3;
-
-            uchar newX = (x1 + x - 8);
             
             if (prio && (vBuffer[sl][x1 + x - 8][0] != 0xD0)) //if the backgound isn't white
                 continue;
@@ -479,8 +475,6 @@ void flipSpriteVH(uchar tile, uchar colorPalette, uchar x1, uchar y1, uchar prio
                 continue;
 
             p3 = (colorPalette >> 2 * p3) & 0x3;
-
-            uchar newX = (x1 + x - 8);
 
             if (prio && (vBuffer[sl][x1 + x - 8][0] != 0xD0)) //if the backgound isn't white
                 continue;

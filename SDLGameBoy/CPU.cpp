@@ -2642,7 +2642,7 @@ void SCF() {
 }
 
 void CCF() {
-    Flag = (FlagZ << 7) | ((FlagC ^ 0x1) << 4) & 0xF0;//keep z, comp c, clear rest
+    Flag = ((FlagZ << 7) | ((FlagC ^ 0x1) << 4)) & 0xF0;//keep z, comp c, clear rest
     CPU.CPUTicks += 4;
 }
 
@@ -2888,7 +2888,8 @@ void DAA() {
         Flag |= 0x80;
     else
         Flag &= ~0x80;
-    /**/if (FlagN)
+    */
+    if (FlagN)
     {
         if (FlagC) 
             CPU.A -= 0x60;
