@@ -3,19 +3,19 @@
 #ifndef cpuh
 #define cpuh
 typedef struct {
-	uchar A;
-	uchar B;
-	uchar C;
-	uchar D;
-	uchar E;
-	uchar H;
-	uchar L;
-	uchar Flags;
-	ushort SP;
-	ushort PC;
-	uchar IME;
-	uchar halt;
-	volatile ulong CPUTicks;
+    uchar A;
+    uchar B;
+    uchar C;
+    uchar D;
+    uchar E;
+    uchar H;
+    uchar L;
+    uchar Flags;
+    ushort SP;
+    ushort PC;
+    uchar IME;
+    uchar halt;
+    volatile ulong CPUTicks;
 }GBCPU;
 
 extern uchar debug;
