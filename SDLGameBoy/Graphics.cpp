@@ -49,7 +49,7 @@ void NextGraphic()
     static uchar fps = 0;
     static ushort frames = 0;
 
-    if (clock() - t1 > 1000)
+    if (clock() - t1 > CLOCKS_PER_SEC)
     {
         t1 = clock();
         printf("FPS: %d\n", fps);
