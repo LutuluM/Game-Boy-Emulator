@@ -9,6 +9,9 @@ Requires the Game Boy bootrom* to run.
 Confirmed working roms.
 Pokemon Red, Pokemon Blue, Tetris
 
+## Building
+To build the project using the Makefile install: clang and libsdl2-image-dev
+
 ## TODO
 Final Implimentations of Sound
 Change Audio from reading from registers to variables, register writes to will update vairables of audio channels 
