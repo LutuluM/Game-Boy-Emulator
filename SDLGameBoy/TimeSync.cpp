@@ -1,15 +1,13 @@
 #include "TimeSync.hpp"
-#include "CPU.h"
-#include <time.h>
 
 void timeSync(){
-    static ulong frames = 0;
+    static ulong cpuCycles = 0;
     static clock_t time = 0;
-    if (getCPUTicks() - frames > FRAMESPERSEC / 100)
+    if (getCPUTicks() - cpuCycles > CYCLESPERSEC / 100)
     {
-        while (clock() - time < 10)
+        while (clock() - time < (CLOCKS_PER_SEC / 100))
             ;
         time = clock();
-        frames = getCPUTicks();
+        cpuCycles = getCPUTicks();
     }
 }
