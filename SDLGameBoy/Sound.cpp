@@ -424,7 +424,7 @@ void updateSound() {
 
     //Might be able to remove these functions
     static ushort counter = 0;
-    if (++counter < FRAMESPERSEC / 1000)//update audio every .001 of a second of cpu speed time helps with fps time might need to be reduced if higher update rate is needed
+    if (++counter < CYCLESPERSEC / 1000)//update audio every .001 of a second of cpu speed time helps with fps time might need to be reduced if higher update rate is needed
         return;
     counter = 0;
     soundMaster();
